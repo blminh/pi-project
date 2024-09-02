@@ -1,0 +1,6 @@
+[submodule "apps/3rdParty/json"]
+	path = apps/3rdParty/json
+	url = https://github.com/nlohmann/json.git
+[submodule "apps/3rdParty/mosquitto"]
+	path = apps/3rdParty/mosquitto
+	url = https://github.com/eclipse/mosquitto.git
