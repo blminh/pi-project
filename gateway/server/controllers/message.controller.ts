@@ -1,5 +1,5 @@
 import expressAsyncHandler from "express-async-handler";
-import Message from "../models/message";
+import Message from "../models/message.model";
 
 const messagesList = expressAsyncHandler(async (req, res) => {
   let data = await Message.findAll();

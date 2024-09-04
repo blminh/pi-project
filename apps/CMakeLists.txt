@@ -21,6 +21,19 @@ add_subdirectory(
     3rdParty
 )
 
+add_executable(${PROJECT_NAME}
+    "main.cpp"
+)
+target_link_libraries(${PROJECT_NAME}
+    ssl
+    crypto
+    pthread
+    nlohmann_json::nlohmann_json
+    mosquittopp
+    wiringPi
+    wiringPiDev
+)
+
 add_executable(camera_app
     "CameraApp/CameraApp.cpp"
 )

@@ -6,7 +6,7 @@
 #include <mosquitto.h>
 #include <signal.h>
 #include <nlohmann/json.hpp>
-// #include "led.cpp"
+#include "./Api/SubApi/led.cpp"
 #include "thread"
 
 static int run = -1;
@@ -44,22 +44,25 @@ int on_message_callback(struct mosquitto *mosq, void *userdata, const struct mos
     std::string topic = static_cast<const char *>(message->topic);
     std::string msg = static_cast<const char *>(message->payload);
     nlohmann::json data = nlohmann::json::parse(msg);
+    std::cout << "Topic" << topic << std::endl;
+    std::cout << "Msg" << msg << std::endl;
+    std::cout << "Data" << data << std::endl;
 
-    // std::thread changeLed(led, data["pin"], data["status"]);
-    // changeLed.detach();
+    if (topic == "led/led1")
+    {
+        std::thread changeLed(led, data["status"]);
+        changeLed.detach();
+    }
     return 0;
 }
 
-void subApi()
+int main()
 {
     int rc;
     struct mosquitto *mosq = NULL;
 
     signal(SIGINT, handle_sigint);
     signal(SIGSEGV, handle_sigint);
-
-    std::thread lcd(showLCD16);
-    lcd.detach();
 
     mosquitto_lib_init();
 
@@ -75,7 +78,7 @@ void subApi()
     mosquitto_subscribe_callback(
         on_message_callback,
         NULL,
-        "control-led",
+        "#",
         0,
         "0.0.0.0",
         1883,
@@ -85,6 +88,9 @@ void subApi()
         NULL, NULL, NULL,
         NULL);
 
+    mosquitto_loop(mosq, -1, 1);
     mosquitto_destroy(mosq);
     mosquitto_lib_cleanup();
+
+    return 0;
 }

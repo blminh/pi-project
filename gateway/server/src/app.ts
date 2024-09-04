@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use("/api/sensor", sensorRoutes);
 app.use("/api/history", messageRoutes);
 
-db.sync().then(() => {
+db.sync({ force: true }).then(() => {
   app.listen(port, () => {
     return console.log(`Express is listening at http://localhost:${port}`);
   });

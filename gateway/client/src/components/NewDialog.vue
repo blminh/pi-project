@@ -12,16 +12,17 @@ v-container(fluid)
       v-divider
       v-card-actions
         v-spacer
-          v-btn(
+          v-btn.ml-1.mr-1(
             text="Close"
-            variant="plain"
+            variant="flat"
+            color="grey-lighten-3"
             @click="isShowDialogModel.isShow = false"
           )
-          v-btn(
-            color="primary"
+          v-btn.ml-1.mr-1(
             text="Save"
-            variant="tonal"
-            @click="isShowDialogModel.isShow = false"
+            variant="flat"
+            color="success"
+            @click="$emit('click:onSave')"
           )
 </template>
 
@@ -29,5 +30,4 @@ v-container(fluid)
 import { ref } from "vue";
 
 const isShowDialogModel = defineModel("isShowDialogModel");
-console.log("Child: " + isShowDialogModel.value.isShow);
 </script>

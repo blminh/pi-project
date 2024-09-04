@@ -1,8 +1,9 @@
 #include <iostream>
 #include <wiringPi.h>
 
-void led(int pin, int status)
+void led(int status)
 {
+    int pin = 27;
     std::cout << "Raspberry Pi blink" << std::endl;
 
     if (wiringPiSetup() == -1)

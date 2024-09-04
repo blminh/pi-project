@@ -27,10 +27,10 @@ v-container
         value="led"
       )
         Led(
-          v-for="item in items"
-          :label="item.name"
-          v-model:ledStatusModel="item.status"
-          @update:ledStatus="changeStatus(item)"
+          v-for="sensor in sensors"
+          :label="sensor.name"
+          :sensor="sensor"
+          v-model:ledSensorModel="sensor.status"
         )
       v-tabs-window-item(
         value="camera"
@@ -47,29 +47,33 @@ v-container
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Led from "@/components/Led.vue";
 import axios from "axios";
 
-const items = ref([
-  { id: 1, name: "Led 1", pin: 23, status: false },
-  { id: 2, name: "Led 2", pin: 26, status: false },
-]);
-
+const sensors = ref([]);
 const tab = ref("led");
+const loading = ref(false);
 
-async function changeStatus(item) {
-  console.log(`From parent: ${item.name} - ${item.status}`);
+onMounted(() => getAll());
 
+const getAll = () => {
+  loading.value = true;
   axios
-    .post("/api/change", item)
+    .get("/api/sensor/")
     .then((res) => {
-      console.log(`Send success! ${res.data}`);
-      console.log(res);
+      console.log(res.data);
+      sensors.value = res.data.map((el) => ({
+        ...el,
+        status: el.status == "on" ? true : false,
+      }));
+      console.log(sensors.value);
     })
     .catch((err) => {
       console.log(`Error: ${err}`);
-      console.log(err);
+    })
+    .finally(() => {
+      loading.value = false;
     });
-}
+};
 </script>

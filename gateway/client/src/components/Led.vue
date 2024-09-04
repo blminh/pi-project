@@ -3,44 +3,37 @@
 <template lang="pug">
 v-container(fluid)
   v-switch(
-    class="reversed-switch"
     inset
     color="success"
-    v-model="ledStatusModel"
+    :label="label"
+    v-model="ledSensorModel"
   )
-    template(v-slot:label)
-      div.switch-label {{ label }}
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue";
+import { watch, onMounted } from "vue";
+import axios from "axios";
 
 const props = defineProps<{
   label: string;
+  sensor: {};
 }>();
 
-const ledStatusModel = defineModel("ledStatusModel");
+const ledSensorModel = defineModel("ledSensorModel");
 
-const emit = defineEmits(["update:ledStatus"]);
+watch(ledSensorModel, (val) => {
+  let data = {
+    ...props.sensor,
+    status: props.sensor.status ? "on" : "off",
+  };
 
-watch(ledStatusModel, (val) => {
-  console.log("From child: " + val);
-  emit("update:ledStatus", val);
+  axios
+    .post("/api/sensor/set", data)
+    .then((res) => {
+      console.log(`Send success! ${res.data}`);
+    })
+    .catch((err) => {
+      console.log(`Error: ${err}`);
+    });
 });
 </script>
-
-<style>
-.reversed-switch .v-input__control {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-}
-
-.reversed-switch .v-switch__track {
-  margin-right: 8px;
-}
-
-.reversed-switch .switch-label {
-  margin-left: 8px;
-}
-</style>
