@@ -13,45 +13,59 @@ v-container
       )
     v-data-table(
       :headers="headers"
-      :items="desserts"
+      :items="histories"
       :search="search"
     )
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Led from "@/components/Led.vue";
 import axios from "axios";
 
 const headers = ref([
   {
     align: "start",
-    key: "name",
+    key: "sensor",
     sortable: false,
-    title: "Name",
+    title: "Sensor",
   },
+  { key: "sensor_status", title: "Sensor Status" },
   { key: "topic", title: "Topic" },
-  { key: "status", title: "Status" },
+  { key: "message_type", title: "Type" },
+  { key: "status", title: "Message Status" },
   { key: "details", title: "Details" },
   { key: "timestamp", title: "Timestamp" },
 ]);
 
-const desserts = ref([
-  {
-    name: "Frozen Yogurt",
-    topic: 159,
-    status: 6.0,
-    details: 24,
-    timestamp: 24,
-  },
-  {
-    name: "Ice cream sandwich",
-    topic: 237,
-    status: 9.0,
-    details: 37,
-    timestamp: 24,
-  },
-]);
-
+const histories = ref([]);
 const search = ref("");
+const loading = ref(false);
+
+onMounted(() => {
+  getAll();
+});
+
+const getAll = () => {
+  loading.value = true;
+  axios
+    .get("/api/history/")
+    .then((res) => {
+      console.log("get all history:");
+      console.log(res);
+      histories.value = res.data.map((el) => ({
+        ...el,
+        sensor: el.sensor.name,
+        timestamp: new Date(el.updatedAt).toLocaleString("en-US", {
+          timeZone: "Asia/Ho_Chi_Minh",
+        }),
+      }));
+    })
+    .catch((err) => {
+      console.log(`Error: ${err}`);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
 </script>

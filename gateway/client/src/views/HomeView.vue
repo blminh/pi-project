@@ -55,9 +55,32 @@ const sensors = ref([]);
 const tab = ref("led");
 const loading = ref(false);
 
-onMounted(() => getAll());
+onMounted(() => {
+  getAll();
+  getSystemStatus();
+});
 
 const getAll = () => {
+  loading.value = true;
+  axios
+    .get("/api/sensor/")
+    .then((res) => {
+      console.log(res.data);
+      sensors.value = res.data.map((el) => ({
+        ...el,
+        status: el.status == "on" ? true : false,
+      }));
+      console.log(sensors.value);
+    })
+    .catch((err) => {
+      console.log(`Error: ${err}`);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+
+const getSystemStatus = () => {
   loading.value = true;
   axios
     .get("/api/sensor/")
