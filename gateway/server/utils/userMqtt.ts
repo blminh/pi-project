@@ -8,11 +8,11 @@ const pubMsg = (sensor: number, topic: string, data: any) => {
     sensor_status: data.status == 1 ? constant.STATUS_ON : constant.STATUS_OFF,
     topic,
     message_type: constant.MSG_TYPE_PUB,
-    status: '',
-    details: '',
-    timestamps: ''
+    status: "",
+    details: "",
+    timestamps: "",
   };
-  const client = mqtt.connect("http://0.0.0.0:1883");
+  const client = mqtt.connect("http://192.168.200.9:1883");
   client.on("connect", () => {
     console.log("Connect to mqtt!");
 

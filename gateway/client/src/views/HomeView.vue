@@ -43,17 +43,29 @@ v-container
       )
         v-card(flat)
           v-card-text
-            p System status!
+            p CPU Temperature - {{ socketState.msg.message }}
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import Led from "@/components/Led.vue";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 const sensors = ref([]);
 const tab = ref("led");
 const loading = ref(false);
+const socketState = ref({});
+
+const socket = io("http://0.0.0.0:3000", {
+  autoConnect: true,
+});
+
+socket.on("temperature", function (data) {
+  console.log("Connected to socket server!");
+  socketState.value.state = "Connected";
+  socketState.value.msg = data;
+});
 
 onMounted(() => {
   getAll();
