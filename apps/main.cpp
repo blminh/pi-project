@@ -1,96 +1,107 @@
-// #include <iostream>
-// #include <string>
-// #include <fstream>
-// #include <vector>
-// #include <mutex>
-// #include <mosquitto.h>
-// #include <signal.h>
-// #include <nlohmann/json.hpp>
-// #include "./Api/SubApi/led.cpp"
-// #include "thread"
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <signal.h>
 
-// static int run = -1;
-// std::mutex mutex;
+#include <mosquitto.h>
+#include <nlohmann/json.hpp>
+#include "./Api/SubApi/led.cpp"
 
-// void handle_sigint(int signal)
-// {
-//     std::cout << "Catch signal: " << signal << std::endl;
-//     {
-//         std::lock_guard<std::mutex> lock(mutex);
-//         run = 0;
-//     }
-//     exit(1);
-// }
+static int run = -1;
+std::mutex mutex;
 
-// void on_connect(struct mosquitto *mosq, void *obj, int rc)
-// {
-//     if (rc != 0)
-//     {
-//         exit(1);
-//     }
-// }
+void handle_sigint(int signal)
+{
+    std::cout << "Catch signal: " << signal << std::endl;
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        run = 0;
+    }
+    exit(1);
+}
 
-// void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
-// {
-//     std::lock_guard<std::mutex> lock(mutex);
-//     run = rc;
-// }
+void on_connect(struct mosquitto *mosq, void *obj, int rc)
+{
+    if (rc != 0)
+    {
+        run = rc;
+        exit(1);
+    }
+    else
+    {
+        mosquitto_subscribe(mosq, NULL, "led/led1", 1);
+    }
+}
 
-// int on_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
-// {
-//     std::cout << "----- Message -----" << std::endl;
-//     std::cout << "Subscriber sub_client received message of topic: " << message->topic << " | Data: " << reinterpret_cast<char *>(message->payload) << "\n";
+void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    run = rc;
+}
 
-//     std::string topic = static_cast<const char *>(message->topic);
-//     std::string msg = static_cast<const char *>(message->payload);
-//     nlohmann::json data = nlohmann::json::parse(msg);
-//     std::cout << "Topic" << topic << std::endl;
-//     std::cout << "Msg" << msg << std::endl;
-//     std::cout << "Data" << data << std::endl;
+void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
+{
+    std::cout << "----- Message -----" << std::endl;
+    std::cout << "Subscriber sub_client received message of topic: " << message->topic << " | Data: " << reinterpret_cast<char *>(message->payload) << "\n";
 
-//     if (topic == "led/led1")
-//     {
-//         std::thread changeLed(led, data["status"]);
-//         changeLed.detach();
-//     }
-//     return 0;
-// }
+    std::string topic = static_cast<const char *>(message->topic);
+    std::string msg = static_cast<const char *>(message->payload);
+    try
+    {
+        std::cout << "Topic" << topic << std::endl;
+        std::cout << "Msg" << msg << std::endl;
+        nlohmann::json data = nlohmann::json::parse(msg);
+        std::cout << "Data" << data["status"] << std::endl;
 
-// int main()
-// {
-//     int rc;
-//     struct mosquitto *mosq = NULL;
+        if (topic == "led/led1")
+        {
+            std::thread changeLed(led, data["status"]);
+            changeLed.join();
+        }
+    }
+    catch (...)
+    {
+        std::cout << "Catch error!" << std::endl;
+    }
+}
 
-//     signal(SIGINT, handle_sigint);
-//     signal(SIGSEGV, handle_sigint);
+int main()
+{
+    int rc;
+    struct mosquitto *mosq = NULL;
 
-//     mosquitto_lib_init();
+    signal(SIGINT, handle_sigint);
+    signal(SIGSEGV, handle_sigint);
 
-//     mosq = mosquitto_new("sender", true, NULL);
-//     if (mosq == NULL)
-//     {
-//         throw;
-//     }
+    mosquitto_lib_init();
 
-//     mosquitto_connect_callback_set(mosq, on_connect);
-//     mosquitto_disconnect_callback_set(mosq, on_disconnect);
+    mosq = mosquitto_new("sender", true, NULL);
+    if (mosq == NULL)
+    {
+        throw;
+    }
 
-//     mosquitto_subscribe_callback(
-//         on_message_callback,
-//         NULL,
-//         "#",
-//         0,
-//         "0.0.0.0",
-//         1883,
-//         "sender",
-//         60,
-//         true,
-//         NULL, NULL, NULL,
-//         NULL);
+    mosquitto_connect_callback_set(mosq, on_connect);
+    mosquitto_message_callback_set(mosq, on_message);
+    mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
-//     mosquitto_loop(mosq, -1, 1);
-//     mosquitto_destroy(mosq);
-//     mosquitto_lib_cleanup();
+    rc = mosquitto_connect(mosq, "0.0.0.0", 1883, 60);
 
-//     return 0;
-// }
+    while (run == -1)
+    {
+        rc = mosquitto_loop(mosq, -1, 1);
+        if (rc != MOSQ_ERR_SUCCESS)
+        {
+            std::cerr << "Mosquitto loop error: " << mosquitto_strerror(rc) << std::endl;
+            break;
+        }
+    }
+
+    mosquitto_destroy(mosq);
+    mosquitto_lib_cleanup();
+
+    return run;
+}
