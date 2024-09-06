@@ -1,8 +1,9 @@
 import expressAsyncHandler from "express-async-handler";
 import Message from "../models/message.model";
+import Sensor from "../models/sensor.model";
 
 const messagesList = expressAsyncHandler(async (req, res) => {
-  let data = await Message.findAll();
+  let data = await Message.findAll({ include: [Sensor] });
   res.json(data);
 });
 

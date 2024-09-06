@@ -78,4 +78,5 @@ pnpm-debug.log*
 # Optional stylelint cache
 .stylelintcache
 
+# db
 database.sqlite

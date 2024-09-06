@@ -1,6 +1,7 @@
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
+import { Worker } from "worker_threads";
 import db from "../database/db";
 import messageRoutes from "../routes/message";
 import sensorRoutes from "../routes/sensor";
@@ -15,6 +16,11 @@ app.use(bodyParser.json());
 
 app.use("/api/sensor", sensorRoutes);
 app.use("/api/history", messageRoutes);
+
+const worker = new Worker(__dirname + "/mqttWorker.ts");
+worker.on("message", (result) => {
+  console.log(result);
+});
 
 db.sync({ force: true }).then(() => {
   app.listen(port, () => {

@@ -11,11 +11,23 @@ const Message = db.define(
     },
     sensor_id: {
       type: DataTypes.INTEGER,
-      references: {
-        model: "Sensor",
-        key: "id",
-      },
       allowNull: false,
+    },
+    sensor_status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    topic: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    message_type: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     details: {
       type: DataTypes.STRING,

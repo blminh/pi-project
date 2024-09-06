@@ -1,6 +1,7 @@
 import expressAsyncHandler from "express-async-handler";
 import Sensor from "../models/sensor.model";
 import SensorType from "../models/sensorType.model";
+import { constant } from "../utils/constant";
 import userMqtt from "../utils/userMqtt";
 
 const sensorsList = expressAsyncHandler(async (req, res) => {
@@ -20,7 +21,7 @@ const addSensor = expressAsyncHandler(async (req, res) => {
   console.log(req.body);
   let data = {
     ...req.body._value,
-    status: "off",
+    status: constant.STATUS_OFF,
     created_at: Date.now(),
   };
   console.log(data);
@@ -46,8 +47,8 @@ const setSensor = expressAsyncHandler(async (req, res) => {
 
   // 2. mqtt
   let topic = `${req.body.sensor_type.topic}/${req.body.topic}`;
-  let data = { status: req.body.status == "on" ? 1 : 0 };
-  userMqtt.pubMsg(topic, data);
+  let data = { status: req.body.status == constant.STATUS_ON ? 1 : 0 };
+  userMqtt.pubMsg(req.body.id, topic, data);
 });
 
 export default { sensorsList, addSensor, getSensor, setSensor };

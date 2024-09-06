@@ -1,29 +1,24 @@
 import { DataTypes } from "sequelize";
 import db from "../database/db";
-import Message from "./message.model";
 
-const Sensor = db.define(
-  "sensors",
+const SystemStatus = db.define(
+  "system_status",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    sensor_type_id: {
+    name: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    name: {
-      type: DataTypes.STRING,
+    total: {
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
-    topic: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    status: {
-      type: DataTypes.STRING,
+    usage: {
+      type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: "off",
     },
@@ -35,7 +30,4 @@ const Sensor = db.define(
   { timestamps: true }
 );
 
-Sensor.hasMany(Message);
-Message.belongsTo(Sensor, {targetKey: 'id', foreignKey: 'sensor_id'});
-
-export default Sensor;
+export default SystemStatus;
