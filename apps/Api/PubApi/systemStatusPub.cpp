@@ -1,7 +1,6 @@
-#include <fstream>
 #include <iostream>
+#include <fstream>
 #include <string>
-#include <unistd.h>
 #include <chrono>
 #include <thread>
 #include <mutex>
@@ -35,54 +34,18 @@ void on_connect(struct mosquitto *mosq, void *obj, int rc)
         log(__LINE__, rc, "Connected to the broker");
         std::lock_guard<std::mutex> lock(mutex);
         run = -1;
-        mosquitto_subscribe(mosq, NULL, "ack/system/temperature", 1);
     }
-}
-
-void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg) {
-    std::cout << "Message received on topic " << msg->topic << ": " << (char*)msg->payload << std::endl;
 }
 
 void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 {
     log(__LINE__, rc, "disconnect broker");
-    if (rc != 0) {
-        std::cerr << "Unexpected disconnection. Return code: " << rc << std::endl;
-    } else {
-        std::cout << "Disconnected from MQTT broker." << std::endl;
-    }
 }
 
-std::string temperatureCpu()
-{
-    std::string tempCpu = "";
-    std::ifstream file("/sys/class/thermal/thermal_zone0/temp");
-    if (!file)
-    {
-        std::cerr << "Error opening file" << std::endl;
-        throw "Error opening file";
-    }
-
-    int temp;
-    file >> temp;
-
-    tempCpu = std::to_string(temp / 1000);
-    std::cout << tempCpu << std::endl;
-    file.close();
-
-    return tempCpu;
-}
-
-void on_publish(struct mosquitto *, void *, int)
-{
-    std::cout << "On publish callback" << std::endl;
-}
-
-int main()
+void systemStatusPub(std::string topic, std::string msg)
 {
     int rc;
     struct mosquitto *mosq = NULL;
-    std::string topic = "system/temperature";
 
     signal(SIGINT, handle_sigint);
     signal(SIGSEGV, handle_sigint);
@@ -104,26 +67,35 @@ int main()
     }
 
     mosquitto_connect_callback_set(mosq, on_connect);
-    mosquitto_message_callback_set(mosq, on_message);
-    mosquitto_publish_callback_set(mosq, on_publish);
     mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
     rc = mosquitto_connect(mosq, "0.0.0.0", 1883, 60);
-            
-    while (true) {
+
+    if (rc != MOSQ_ERR_SUCCESS)
+    {
+        log(__LINE__, rc, "Reconnecting ...");
+        throw;
+    }
+
+    while (1)
+    {
+        mosquitto_publish(mosq, NULL, topic.c_str(), msg.length(), msg.c_str(), 1, true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    }
+
+    while (run == -1)
+    {
         rc = mosquitto_loop(mosq, -1, 1);
-        if (rc != MOSQ_ERR_SUCCESS) {
-            std::cerr << "Mosquitto loop error: " << mosquitto_strerror(rc) << std::endl;
-            break;
-        } else {
-            std::string temp = temperatureCpu();
-            std::cout << "Temperature: " << temp << std::endl;
-            mosquitto_publish(mosq, NULL, topic.c_str(), temp.length(), temp.c_str(), 1, true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        if (rc != MOSQ_ERR_SUCCESS)
+        {
+            mosquitto_reconnect_delay_set(mosq, 1000, 10000, true);
+            rc = mosquitto_reconnect(mosq);
+            log(__LINE__, rc, "Reconnecting ...");
         }
     }
 
+    mosquitto_loop_forever(mosq, -1, 1);
+
     mosquitto_destroy(mosq);
     mosquitto_lib_cleanup();
-    return run;
 }
