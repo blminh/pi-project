@@ -9,6 +9,7 @@
 #include <mosquitto.h>
 #include <nlohmann/json.hpp>
 #include "./Api/SubApi/led.cpp"
+#include "./Api/SubApi/cameraSub.cpp"
 
 static int run = -1;
 std::mutex mutex;
@@ -59,6 +60,11 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
         if (topic == "led/led1")
         {
             std::thread changeLed(led, data["status"]);
+            changeLed.join();
+        }
+        else if (topic == "home/camera")
+        {
+            std::thread changeLed(cameraLed, data["status"]);
             changeLed.join();
         }
     }

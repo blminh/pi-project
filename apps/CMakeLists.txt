@@ -49,6 +49,8 @@ target_link_libraries(camera_app
     opencv_videoio
     opencv_video
     opencv_imgproc
+    opencv_objdetect
+    opencv_tracking
 )
 
 add_executable(led_app
@@ -60,8 +62,8 @@ target_link_libraries(led_app
     pthread
     nlohmann_json::nlohmann_json
     mosquittopp
-    # wiringPi
-    # wiringPiDev
+    wiringPi
+    wiringPiDev
 )
 
 add_executable(system_status_app
@@ -73,6 +75,6 @@ target_link_libraries(system_status_app
     pthread
     nlohmann_json::nlohmann_json
     mosquittopp
-    # wiringPi
-    # wiringPiDev
+    wiringPi
+    wiringPiDev
 )
