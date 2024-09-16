@@ -2,8 +2,8 @@ import { DataTypes } from "sequelize";
 import db from "../database/db";
 import { constant } from "../utils/constant";
 
-const SystemStatus = db.define(
-  "system_status",
+const CameraImage = db.define(
+  "camera_images",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -11,17 +11,13 @@ const SystemStatus = db.define(
       primaryKey: true,
     },
     name: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    total: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.STRING,
       allowNull: false,
     },
-    usage: {
-      type: DataTypes.FLOAT,
+    status: {
+      type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: constant.STATUS_OFF,
+      defaultValue: constant.STATUS_ACTIVE,
     },
     details: {
       type: DataTypes.STRING,
@@ -31,4 +27,4 @@ const SystemStatus = db.define(
   { timestamps: true }
 );
 
-export default SystemStatus;
+export default CameraImage;

@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../database/db";
+import { constant } from "../utils/constant";
 import Message from "./message.model";
 
 const Sensor = db.define(
@@ -25,7 +26,7 @@ const Sensor = db.define(
     status: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: "off",
+      defaultValue: constant.STATUS_OFF,
     },
     details: {
       type: DataTypes.STRING,
@@ -36,6 +37,6 @@ const Sensor = db.define(
 );
 
 Sensor.hasMany(Message);
-Message.belongsTo(Sensor, {targetKey: 'id', foreignKey: 'sensor_id'});
+Message.belongsTo(Sensor, { targetKey: "id", foreignKey: "sensor_id" });
 
 export default Sensor;

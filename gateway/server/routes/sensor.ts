@@ -1,4 +1,5 @@
 import express from "express";
+import cameraImageController from "../controllers/cameraImage.controller";
 import sensorController from "../controllers/sensor.controller";
 import sensorTypeController from "../controllers/sensorType.controller ";
 import systemStatusController from "../controllers/systemStatus.controller";
@@ -9,6 +10,7 @@ router.get("/get?:id", sensorController.getSensor);
 router.get("/type", sensorTypeController.sensorTypesList);
 router.get("/type/get?:id", sensorTypeController.getSensorType);
 router.get("/system", systemStatusController.systemStatus);
+router.get("/images", cameraImageController.imagesList);
 
 router.post("/add", sensorController.addSensor);
 router.post("/set", sensorController.setSensor);

@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import db from "../database/db";
+import { constant } from "../utils/constant";
 import Sensor from "./sensor.model";
 
 const SensorType = db.define(
@@ -21,7 +22,7 @@ const SensorType = db.define(
     status: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: "active",
+      defaultValue: constant.STATUS_ACTIVE,
     },
     details: {
       type: DataTypes.STRING,

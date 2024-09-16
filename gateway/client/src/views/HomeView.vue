@@ -35,9 +35,24 @@ v-container
       v-tabs-window-item(
         value="camera"
       )
-        v-card(flat)
+        v-card(
+          flat
+          width="800px"
+        )
           v-card-text
-            p Camera!
+            v-container
+              v-row
+                v-col(
+                  cols="4"
+                  class="d-flex child-flex"
+                  v-for="img in imgList"
+                )
+                  v-img(
+                    cover
+                    aspect-ratio="1"
+                    class="bg-grey-lighten-2"
+                    :src="img.path"
+                  )
       v-tabs-window-item(
         value="system_status"
       )
@@ -56,6 +71,8 @@ const sensors = ref([]);
 const tab = ref("led");
 const loading = ref(false);
 const socketState = ref({});
+const imgPath = ref("");
+const imgList = ref([]);
 
 const socket = io("http://0.0.0.0:3000", {
   autoConnect: true,
@@ -68,11 +85,17 @@ socket.on("temperature", function (data) {
 });
 
 onMounted(() => {
-  getAll();
-  getSystemStatus();
+  getAllSensors();
+  getImagesList();
+  imgPath.value = "http://0.0.0.0:3000/images/";
 });
 
-const getAll = () => {
+watch(tab, (val) => {
+  if (val == "led") getAllSensors();
+  else if (val == "camera") getImagesList();
+});
+
+const getAllSensors = () => {
   loading.value = true;
   axios
     .get("/api/sensor/")
@@ -92,17 +115,16 @@ const getAll = () => {
     });
 };
 
-const getSystemStatus = () => {
+const getImagesList = () => {
   loading.value = true;
   axios
-    .get("/api/sensor/")
+    .get("/api/sensor/images/")
     .then((res) => {
-      console.log(res.data);
-      sensors.value = res.data.map((el) => ({
-        ...el,
-        status: el.status == "on" ? true : false,
+      imgList.value = res.data.map((el) => ({
+        id: el.id,
+        path: imgPath.value + el.name,
       }));
-      console.log(sensors.value);
+      console.log(imgList.value);
     })
     .catch((err) => {
       console.log(`Error: ${err}`);
