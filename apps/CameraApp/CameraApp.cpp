@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <ctime>
+#include <thread>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/tracking.hpp>
@@ -15,7 +16,7 @@
 
 int main(int argc, char **argv)
 {
-    cv::VideoCapture cap("rtsp://admin:UAFYOO@192.168.200.2");
+    cv::VideoCapture cap(0);
     if (!cap.isOpened())
     {
         std::cout << "Cannot open the video camera!!" << std::endl;
@@ -31,6 +32,11 @@ int main(int argc, char **argv)
     {
         cv::Mat frame, fgMaskMOG2;
         cap.read(frame);
+        if (frame.empty())
+        {
+            std::cout << "LOG | Frame empty | " << __LINE__ << std::endl;
+            continue;
+        }
         bg->apply(frame, fgMaskMOG2);
 
         cv::erode(fgMaskMOG2, fgMaskMOG2, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
@@ -63,21 +69,13 @@ int main(int argc, char **argv)
                 std::cout << "============ Detect!!! ============" << std::endl;
                 std::string imgName = std::to_string(time(0)) + ".jpg";
                 std::string imgPath = savePath + imgName;
-                bool isWrite = cv::imwrite(imgPath, frame);
-                if (isWrite)
+                std::vector<uint8_t> buffer;
+                bool success = cv::imencode(".jpg", frame, buffer);
+                if (success)
                 {
-                    CameraPub::cameraPub(imgName);
+                    CameraPub::cameraPub(imgName, buffer);
                 }
             }
-        }
-
-        cv::resize(frame, frame, cv::Size(frame.cols / 4, frame.rows / 4), 0, 0, cv::INTER_LINEAR);
-        cv::imshow("Detect", frame);
-
-        if (cv::waitKey(1) == 27)
-        {
-            // exit if ESC is pressed
-            break;
         }
     }
 

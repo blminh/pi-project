@@ -53,7 +53,13 @@ namespace CameraPub
         }
     }
 
-    void cameraPub(std::string &imgName)
+    void on_publish(struct mosquitto *mosq, void *obj, int mid)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        run = 0;
+    }
+
+    void cameraPub(std::string imgName, std::vector<uint8_t> buffer)
     {
         int rc;
         struct mosquitto *mosq = NULL;
@@ -79,6 +85,7 @@ namespace CameraPub
         }
 
         mosquitto_connect_callback_set(mosq, on_connect);
+        mosquitto_publish_callback_set(mosq, on_publish);
         mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
         rc = mosquitto_connect(mosq, "0.0.0.0", 1883, 60);
@@ -86,11 +93,21 @@ namespace CameraPub
         {
             std::cerr << "Mosquitto loop error: " << mosquitto_strerror(rc) << std::endl;
         }
+
         nlohmann::json j;
         j["image_name"] = imgName;
+        j["image_data"] = buffer;
         j["status"] = 1;
         std::string data = j.dump();
-        mosquitto_publish(mosq, NULL, topic.c_str(), data.length(), data.c_str(), 1, true);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        while (run == -1)
+        {
+            int mp = mosquitto_publish(mosq, NULL, topic.c_str(), data.length(), data.c_str(), 1, true);
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            if (mp == 0)
+                break;
+        }
 
         mosquitto_destroy(mosq);
         mosquitto_lib_cleanup();
