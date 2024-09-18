@@ -1,6 +1,7 @@
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
+import fs from "fs/promises";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { Worker } from "worker_threads";
@@ -40,7 +41,15 @@ imageWorker.on("message", async (result) => {
     status: constant.STATUS_ACTIVE,
   };
   console.log("----------------");
-  console.log(data);
+  const bufferData = Buffer.from(result.image_data, "binary");
+  fs.writeFile(`${__dirname}/../public/images/${result.image_name}`, bufferData)
+    .then(() => {
+      console.log("Buffer has been written to file successfully");
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
   const img = await CameraImage.findOne({
     where: { name: result.image_name },
   });
