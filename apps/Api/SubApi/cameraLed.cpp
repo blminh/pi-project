@@ -3,7 +3,7 @@
 
 void cameraLed(int status)
 {
-    int pin = 11;
+    int pin = 0;
     std::cout << "Raspberry Pi blink" << std::endl;
 
     if (wiringPiSetup() == -1)

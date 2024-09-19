@@ -33,7 +33,7 @@ void on_connect(struct mosquitto *mosq, void *obj, int rc)
     }
     else
     {
-        mosquitto_subscribe(mosq, NULL, "led/led1", 1);
+        mosquitto_subscribe(mosq, NULL, "#", 1);
     }
 }
 

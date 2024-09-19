@@ -32,6 +32,7 @@ int main(int argc, char **argv)
     {
         cv::Mat frame, fgMaskMOG2;
         cap.read(frame);
+        cv::resize(frame, frame, cv::Size(cap.get(cv::CAP_PROP_FRAME_WIDTH) / 2, cap.get(cv::CAP_PROP_FRAME_HEIGHT)) / 2, cv::INTER_LINEAR);
         if (frame.empty())
         {
             std::cout << "LOG | Frame empty | " << __LINE__ << std::endl;

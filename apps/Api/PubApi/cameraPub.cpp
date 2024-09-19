@@ -59,7 +59,7 @@ namespace CameraPub
         run = 0;
     }
 
-    void cameraPub(std::string imgName, std::vector<uint8_t> buffer)
+    void cameraPub(const std::string &imgName, const std::vector<uint8_t> &buffer)
     {
         int rc;
         struct mosquitto *mosq = NULL;
@@ -100,6 +100,7 @@ namespace CameraPub
         j["status"] = 1;
         std::string data = j.dump();
         std::this_thread::sleep_for(std::chrono::seconds(1));
+
         while (run == -1)
         {
             int mp = mosquitto_publish(mosq, NULL, topic.c_str(), data.length(), data.c_str(), 1, true);
