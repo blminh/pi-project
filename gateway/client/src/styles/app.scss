@@ -1,0 +1,29 @@
+@import "base";
+
+@media screen and (max-width: 800px) {
+  .u-app {
+    min-width: 640px;
+
+    .u-app-bar {
+      .u-app-items {
+        .u-app-item {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 800px) {
+  .u-app {
+    .u-menu-btn {
+      display: none;
+    }
+
+    .u-app-items {
+      .u-app-item {
+        display: block;
+      }
+    }
+  }
+}

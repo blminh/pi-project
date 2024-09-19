@@ -1,0 +1,23 @@
+@media screen and (max-width: 800px) {
+  .u-tabs {
+    width: 45px;
+
+    .u-tab {
+      .u-tab-title {
+        display: none;
+      }
+
+      .u-tab-icon {
+        display: block;
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 800px) {
+  .u-tab {
+    .u-tab-icon {
+      display: none;
+    }
+  }
+}

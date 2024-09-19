@@ -1,26 +1,28 @@
-import { fileURLToPath, URL } from "node:url";
-
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
-import { defineConfig } from "vite";
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig, loadEnv } from "vite";
 
-export default defineConfig({
-  plugins: [vue(), vueJsx()],
-  server: {
-    origin: "0.0.0.0",
-    port: 8089,
-    proxy: {
-      "^/api": {
-        // target: "http://192.168.200.9:3000",
-        target: "http://0.0.0.0:3000",
-        changeOrigin: true,
-        ws: true,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  return {
+    plugins: [vue(), vueJsx()],
+    server: {
+      port: 8089,
+      host: true,
+      proxy: {
+        "/api": {
+          target: `${env.VITE_API_URL ?? "http://localhost:3000"}`,
+          changeOrigin: true,
+          ws: true,
+          rewrite: (path) => path.replace(/^\/api/, ""),
+        },
       },
     },
-  },
-  resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+      },
     },
-  },
+  };
 });

@@ -3,27 +3,33 @@
 <template lang="pug">
 v-container
   div.d-flex.flex-row
-    v-tabs(
+    v-tabs.u-tabs(
       v-model="tab"
       color="primary"
       direction="vertical"
     )
-      v-tab(
+      v-tab.u-tab(
         text="Led"
         value="led"
       )
-      v-tab(
+        v-icon.u-tab-icon(icon="mdi-led-outline")
+        span.u-tab-title Led
+      v-tab.u-tab(
         text="Camera"
         value="camera"
       )
-      v-tab(
+        v-icon.u-tab-icon(icon="mdi-webcam")
+        span.u-tab-title Camera
+      v-tab.u-tab(
         text="System Status"
         value="system_status"
       )
-    v-tabs-window(
+        v-icon.u-tab-icon(icon="mdi-raspberry-pi")
+        span.u-tab-title System Status
+    v-tabs-window.u-tabs-window(
       v-model="tab"
     )
-      v-tabs-window-item(
+      v-tabs-window-item.u-tabs-item(
         value="led"
       )
         Led(
@@ -32,7 +38,7 @@ v-container
           :sensor="sensor"
           v-model:ledSensorModel="sensor.status"
         )
-      v-tabs-window-item(
+      v-tabs-window-item.u-tabs-item(
         value="camera"
       )
         v-card(
@@ -53,7 +59,7 @@ v-container
                     class="bg-grey-lighten-2"
                     :src="img.path"
                   )
-      v-tabs-window-item(
+      v-tabs-window-item.u-tabs-item(
         value="system_status"
       )
         v-card(flat)
@@ -70,11 +76,14 @@ import { io } from "socket.io-client";
 const sensors = ref([]);
 const tab = ref("led");
 const loading = ref(false);
-const socketState = ref({});
+const socketState = ref({
+  state: "",
+  msg: "",
+});
 const imgPath = ref("");
 const imgList = ref([]);
 
-const socket = io("http://0.0.0.0:3000", {
+const socket = io(import.meta.env.VITE_API_URL, {
   autoConnect: true,
 });
 
@@ -87,7 +96,7 @@ socket.on("temperature", function (data) {
 onMounted(() => {
   getAllSensors();
   getImagesList();
-  imgPath.value = "http://0.0.0.0:3000/images/";
+  imgPath.value = `${import.meta.env.VITE_API_URL}/images/`;
 });
 
 watch(tab, (val) => {
@@ -100,12 +109,10 @@ const getAllSensors = () => {
   axios
     .get("/api/sensor/")
     .then((res) => {
-      console.log(res.data);
       sensors.value = res.data.map((el) => ({
         ...el,
         status: el.status == "on" ? true : false,
       }));
-      console.log(sensors.value);
     })
     .catch((err) => {
       console.log(`Error: ${err}`);
@@ -124,7 +131,6 @@ const getImagesList = () => {
         id: el.id,
         path: imgPath.value + el.name,
       }));
-      console.log(imgList.value);
     })
     .catch((err) => {
       console.log(`Error: ${err}`);
@@ -134,3 +140,7 @@ const getImagesList = () => {
     });
 };
 </script>
+
+<style lang="scss" scoped>
+@import "../styles/_tab";
+</style>

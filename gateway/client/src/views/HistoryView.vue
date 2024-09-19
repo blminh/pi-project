@@ -2,12 +2,13 @@
 
 <template lang="pug">
 v-container
-  v-card(title="History")
+  v-card.u-card(title="History")
     template(v-slot:text)
       v-text-field(
         v-model="search"
         label="Search"
         variant="outlined"
+        prepend-inner-icon="mdi-magnify"
         hide-details
         single-line
       )
@@ -51,8 +52,6 @@ const getAll = () => {
   axios
     .get("/api/history/")
     .then((res) => {
-      console.log("get all history:");
-      console.log(res);
       histories.value = res.data.map((el) => ({
         ...el,
         sensor: el.sensor.name,
@@ -69,3 +68,7 @@ const getAll = () => {
     });
 };
 </script>
+
+<style lang="scss" scoped>
+@import "../styles/HistoryView";
+</style>

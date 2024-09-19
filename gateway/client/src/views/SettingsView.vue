@@ -3,35 +3,44 @@
 <template lang="pug">
 v-container
   div.d-flex.flex-row
-    v-tabs(
+    v-tabs.u-tabs(
       v-model="tab"
       color="primary"
       direction="vertical"
     )
-      v-tab(
+      v-tab.u-tab(
         text="List sensors"
         value="sensors"
       )
-      v-tab(
+        v-icon.u-tab-icon(icon="mdi-list-box-outline")
+        span.u-tab-title List sensors
+      v-tab.u-tab(
         text="New sensor"
         value="new_sensor"
       )
-      v-tab(
+        v-icon.u-tab-icon(icon="mdi-shape-plus-outline")
+        span.u-tab-title New sensor
+      v-tab.u-tab(
         text="Sensor type"
         value="sensor_type"
       )
-    v-tabs-window(
+        v-icon.u-tab-icon(icon="mdi-shape-outline")
+        span.u-tab-title Sensor type
+    v-tabs-window.u-tabs-window(
       v-model="tab"
     )
-      v-tabs-window-item(
+      v-tabs-window-item.u-tabs-item(
         value="sensors"
       )
-        v-card(title="All sensors" flat)
+        v-card.u-card(
+          title="All sensors"
+        )
           template(v-slot:text)
             v-text-field(
               v-model="search"
               label="Search"
               variant="outlined"
+              prepend-inner-icon="mdi-magnify"
               hide-details
               single-line
             )
@@ -40,10 +49,10 @@ v-container
             :items="allSensors"
             :search="search"
           )
-      v-tabs-window-item(
+      v-tabs-window-item.u-tabs-item(
         value="new_sensor"
       )
-        NewCard.ml-16(
+        NewCard.u-card(
           title="New Sensor"
           width="500"
           @click:onSave="onAddNewSensor()"
@@ -81,10 +90,10 @@ v-container
                   variant="outlined"
                   v-model="newSensor.details"
                 )        
-      v-tabs-window-item(
+      v-tabs-window-item.u-tabs-item(
         value="sensor_type"
       )
-        NewCard.ml-16(
+        NewCard.u-card(
           title="Sensor Type"
           width="500"
           @click:onSave="onAddNewSensorType()"
@@ -190,8 +199,10 @@ const getAllSensorType = () => {
     .get("/api/sensor/type")
     .then((res) => {
       console.log(res);
-      allSensorType.value = res.data;
-      newSensor.value.sensor_type_id = res.data[0].id;
+      if (res.data.length() > 0) {
+        allSensorType.value = res.data;
+        newSensor.value.sensor_type_id = res.data[0].id;
+      }
     })
     .catch((err) => {
       console.log(`Error: ${err}`);
@@ -256,7 +267,9 @@ const onClearSensorType = () => {
 };
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
+@import "../styles/_tab";
+
 .v-tabs-window {
   width: -webkit-fill-available;
 }
