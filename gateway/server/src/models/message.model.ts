@@ -11,7 +11,7 @@ const Message = db.define(
     },
     sensor_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     sensor_status: {
       type: DataTypes.STRING,
@@ -32,10 +32,6 @@ const Message = db.define(
     details: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    timestamps: {
-      type: DataTypes.TEXT,
-      allowNull: false,
     },
   },
   { timestamps: true }

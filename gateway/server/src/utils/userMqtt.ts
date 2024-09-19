@@ -10,9 +10,9 @@ const pubMsg = (sensor: number, topic: string, data: any) => {
     message_type: constant.MSG_TYPE_PUB,
     status: "",
     details: "",
-    timestamps: "",
   };
-  const client = mqtt.connect("http://192.168.200.9:1883");
+  const client = mqtt.connect(`${process.env.PI_URL}/${process.env.PI_PORT}`);
+
   client.on("connect", () => {
     console.log("Connect to mqtt!");
 

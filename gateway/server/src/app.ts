@@ -1,70 +1,116 @@
 import bodyParser from "body-parser";
 import cors from "cors";
-import express from "express";
+import dotenv from "dotenv";
+import express, { Express } from "express";
 import fs from "fs/promises";
 import { createServer } from "http";
+import path from "path";
 import { Server } from "socket.io";
 import { Worker } from "worker_threads";
-import db from "../database/db";
-import CameraImage from "../models/cameraImage.model";
-import messageRoutes from "../routes/message";
-import sensorRoutes from "../routes/sensor";
-import { constant } from "../utils/constant";
+import db from "./database/db";
+import CameraImage from "./models/cameraImage.model";
+import messageRoutes from "./routes/message";
+import sensorRoutes from "./routes/sensor";
+import { constant } from "./utils/constant";
+import msg from "./utils/msg";
 
-const app = express();
+dotenv.config();
+
+const app: Express = express();
 const server = createServer(app);
 const port = process.env.PORT || 3000;
+const allowedOrigins = process.env.ALLOWED_ORIGINS || "";
+const allowedOriginsArr = allowedOrigins
+  .split(",")
+  .map((origin) => origin.trim());
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:8089",
+    origin: allowedOriginsArr,
   },
 });
 
 app.use(
   cors({
-    origin: "http://0.0.0.0:8089",
+    origin: allowedOriginsArr,
+    allowedHeaders: [
+      "access-control-allow-origin",
+      "authorization",
+      "Pragma",
+      "contact",
+    ],
   })
 );
 
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static(__dirname + "/../public"));
+app.use(express.static(__dirname + "/public"));
 
 app.use("/api/sensor", sensorRoutes);
 app.use("/api/history", messageRoutes);
 
-const imageWorker = new Worker(__dirname + "/imageWorker.ts");
+const imageWorker = new Worker(
+  path.resolve(__dirname + "/workers/imageWorker.js")
+);
 imageWorker.on("message", async (result) => {
-  let data = {
-    name: result.image_name,
-    status: constant.STATUS_ACTIVE,
-  };
-  console.log("----------------");
-  const bufferData = Buffer.from(result.image_data, "binary");
-  fs.writeFile(`${__dirname}/../public/images/${result.image_name}`, bufferData)
+  const bufferData = Buffer.from(result.message.image_data, "binary");
+  let isWriteImg = false;
+  console.log(result);
+
+  fs.writeFile(
+    `${__dirname}/public/images/${result.message.image_name}`,
+    bufferData
+  )
     .then(() => {
       console.log("Buffer has been written to file successfully");
+      let msgData = {
+        sensorStatus: constant.STATUS_ACTIVE,
+        msgType: constant.MSG_TYPE_SUB,
+        status: constant.MSG_SUCCESS,
+        details: "Camera | Detect motion",
+      };
+      msg.addMsg(1, result.topic, msgData);
+      isWriteImg = true;
     })
     .catch((err) => {
       console.error(err);
+      let msgData = {
+        sensorStatus: constant.STATUS_ACTIVE,
+        msgType: constant.MSG_TYPE_SUB,
+        status: constant.MSG_SUCCESS,
+        details: `Camera | Error: ${err}`,
+      };
+      msg.addMsg(1, result.topic, msgData);
     });
 
-  const img = await CameraImage.findOne({
-    where: { name: result.image_name },
-  });
-  if (img === null) {
-    await CameraImage.create(data);
+  if (isWriteImg) {
+    let saveImgData = {
+      name: result.message.image_name,
+      status: constant.STATUS_ACTIVE,
+    };
+    const img = await CameraImage.findOne({
+      where: { name: result.message.image_name },
+    });
+    if (img === null) {
+      await CameraImage.create(saveImgData);
+    }
   }
 });
 
-const worker = new Worker(__dirname + "/mqttWorker.ts");
-
+const worker = new Worker(__dirname + "/workers/mqttWorker.js");
 io.on("connection", (socket) => {
   console.log("a user connected");
   worker.on("message", (result) => {
-    console.log(result);
     socket.emit("temperature", result);
+
+    let msgData = {
+      sensorStatus: constant.STATUS_ACTIVE,
+      msgType: constant.MSG_TYPE_SUB,
+      status: constant.MSG_SUCCESS,
+      details: `System Status | Temperature: ${result.message}`,
+    };
+    msg.addMsg(2, result.topic, msgData);
   });
 });
 
