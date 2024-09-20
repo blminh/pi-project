@@ -22,18 +22,46 @@ add_subdirectory(
     3rdParty
 )
 
-add_executable(${PROJECT_NAME}
-    "main.cpp"
-)
-target_link_libraries(${PROJECT_NAME}
-    ssl
-    crypto
-    pthread
-    nlohmann_json::nlohmann_json
-    mosquittopp
-    wiringPi
-    wiringPiDev
-)
+if (PICO_ON_DEVICE)
+    add_executable(${PROJECT_NAME}
+        "main.cpp"
+    )
+    target_link_libraries(${PROJECT_NAME}
+        ssl
+        crypto
+        pthread
+        nlohmann_json::nlohmann_json
+        mosquittopp
+        wiringPi
+        wiringPiDev
+    )
+
+    add_executable(led_app
+        "LedApp/LedApp.cpp"
+    )
+    target_link_libraries(led_app
+        ssl
+        crypto
+        pthread
+        nlohmann_json::nlohmann_json
+        mosquittopp
+        wiringPi
+        wiringPiDev
+    )
+
+    add_executable(system_status_app
+        "SystemStatusApp/SystemStatusApp.cpp"
+    )
+    target_link_libraries(system_status_app
+        ssl
+        crypto
+        pthread
+        nlohmann_json::nlohmann_json
+        mosquittopp
+        wiringPi
+        wiringPiDev
+    )
+endif()
 
 add_executable(camera_app
     "CameraApp/CameraApp.cpp"
@@ -52,30 +80,4 @@ target_link_libraries(camera_app
     opencv_imgproc
     opencv_objdetect
     opencv_tracking
-)
-
-add_executable(led_app
-    "LedApp/LedApp.cpp"
-)
-target_link_libraries(led_app
-    ssl
-    crypto
-    pthread
-    nlohmann_json::nlohmann_json
-    mosquittopp
-    wiringPi
-    wiringPiDev
-)
-
-add_executable(system_status_app
-    "SystemStatusApp/SystemStatusApp.cpp"
-)
-target_link_libraries(system_status_app
-    ssl
-    crypto
-    pthread
-    nlohmann_json::nlohmann_json
-    mosquittopp
-    wiringPi
-    wiringPiDev
 )

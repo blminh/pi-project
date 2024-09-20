@@ -25,8 +25,6 @@ int main(int argc, char **argv)
 
     cv::Ptr<cv::BackgroundSubtractorMOG2>
         bg = cv::createBackgroundSubtractorMOG2();
-    std::string currentPath = std::filesystem::current_path();
-    std::string savePath = currentPath + "/../../gateway/server/public/images/";
 
     while (true)
     {
@@ -69,12 +67,12 @@ int main(int argc, char **argv)
                 cv::rectangle(frame, boundRect[i].tl(), boundRect[i].br(), cv::Scalar(0, 255, 0), 2);
                 std::cout << "============ Detect!!! ============" << std::endl;
                 std::string imgName = std::to_string(time(0)) + ".jpg";
-                std::string imgPath = savePath + imgName;
                 std::vector<uint8_t> buffer;
                 bool success = cv::imencode(".jpg", frame, buffer);
                 if (success)
                 {
-                    CameraPub::cameraPub(imgName, buffer);
+                    CameraPub::cameraPubImage(imgName, buffer);
+                    CameraPub::cameraPubLed();
                 }
             }
         }

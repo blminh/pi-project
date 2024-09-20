@@ -57,12 +57,12 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
         nlohmann::json data = nlohmann::json::parse(msg);
         std::cout << "Data" << data["status"] << std::endl;
 
-        if (topic == "led/led1")
+        if (topic == "led/led_pi")
         {
             std::thread changeLed(led, data["status"]);
             changeLed.join();
         }
-        else if (topic == "home/camera")
+        else if (topic == "camera/webcam")
         {
             std::thread changeLed(cameraLed, data["status"]);
             changeLed.join();
