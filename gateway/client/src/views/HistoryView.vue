@@ -55,6 +55,7 @@ const getAll = () => {
       histories.value = res.data.map((el) => ({
         ...el,
         sensor: el.sensor.name,
+        sensor_status: el.sensor.status,
         timestamp: new Date(el.updatedAt).toLocaleString("en-US", {
           timeZone: "Asia/Ho_Chi_Minh",
         }),

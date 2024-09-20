@@ -11,11 +11,10 @@ export default defineConfig(({ mode }) => {
       port: 8089,
       host: true,
       proxy: {
-        "/api": {
-          target: `${env.VITE_API_URL ?? "http://localhost:3000"}`,
+        "^/api": {
+          target: "http://localhost:3000",
           changeOrigin: true,
           ws: true,
-          rewrite: (path) => path.replace(/^\/api/, ""),
         },
       },
     },

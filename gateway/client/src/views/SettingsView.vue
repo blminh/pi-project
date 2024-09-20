@@ -127,6 +127,7 @@ v-container
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
+import _ from "lodash";
 
 import Led from "@/components/Led.vue";
 import NewCard from "@/components/NewCard.vue";
@@ -199,7 +200,7 @@ const getAllSensorType = () => {
     .get("/api/sensor/type")
     .then((res) => {
       console.log(res);
-      if (res.data.length() > 0) {
+      if (!_.isEmpty(res.data)) {
         allSensorType.value = res.data;
         newSensor.value.sensor_type_id = res.data[0].id;
       }
