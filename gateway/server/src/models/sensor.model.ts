@@ -13,7 +13,7 @@ const Sensor = db.define(
     },
     sensor_type_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING,
@@ -31,6 +31,14 @@ const Sensor = db.define(
     details: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
     },
   },
   { timestamps: true }

@@ -28,6 +28,14 @@ const SensorType = db.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
+    },
   },
   { timestamps: true }
 );

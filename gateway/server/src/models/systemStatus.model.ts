@@ -3,7 +3,7 @@ import db from "../database/db";
 import { constant } from "../utils/constant";
 
 const SystemStatus = db.define(
-  "system_status",
+  "system_statuses",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -11,7 +11,7 @@ const SystemStatus = db.define(
       primaryKey: true,
     },
     name: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: true,
     },
     total: {
@@ -21,11 +21,23 @@ const SystemStatus = db.define(
     usage: {
       type: DataTypes.FLOAT,
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
       defaultValue: constant.STATUS_OFF,
     },
     details: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
     },
   },
   { timestamps: true }

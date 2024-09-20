@@ -1,11 +1,10 @@
 import mqtt from "mqtt";
-import Message from "../models/message.model";
+import messageController from "../controllers/message.controller";
 import { constant } from "./constant";
 
 const pubMsg = (sensor: number, topic: string, data: any) => {
   let msg = {
     sensor_id: sensor,
-    sensor_status: data.status == 1 ? constant.STATUS_ON : constant.STATUS_OFF,
     topic,
     message_type: constant.MSG_TYPE_PUB,
     status: "",
@@ -27,7 +26,7 @@ const pubMsg = (sensor: number, topic: string, data: any) => {
         msg.details = "Message published successfully";
       }
 
-      await Message.create(msg);
+      await messageController.addMsgFromServer(msg);
     });
   });
 

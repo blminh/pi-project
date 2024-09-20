@@ -1,41 +1,50 @@
 import expressAsyncHandler from "express-async-handler";
-import SensorType from "../models/sensorType.model";
+import { QueryTypes } from "sequelize";
+import sequelize from "../database/db";
+import { constant } from "../utils/constant";
 
 const sensorTypesList = expressAsyncHandler(async (req, res) => {
-  let data = await SensorType.findAll();
+  let data = await sequelize.query("SELECT * FROM `sensor_types`", {
+    type: QueryTypes.SELECT,
+  });
   res.json(data);
 });
 
 const getSensorType = expressAsyncHandler(async (req, res) => {
-  console.log(req.params.id);
-  console.log(req.query.id);
   let id: any = req.query.id;
-  let data = await SensorType.findByPk(parseInt(id));
+  let data = await sequelize.query(
+    "SELECT * FROM `sensor_types` WHERE id = :id",
+    {
+      type: QueryTypes.SELECT,
+      replacements: { id },
+    }
+  );
   res.json(data);
 });
 
 const addSensorType = expressAsyncHandler(async (req, res) => {
   let data = {
     ...req.body._value,
+    status: constant.STATUS_ACTIVE,
     created_at: Date.now(),
   };
-  console.log(data);
-  let result = await SensorType.create(data);
+  let result = await sequelize.query(
+    `INSERT INTO sensor_types (name, topic, status, details)
+     VALUES (:name, :topic, :status, :details);`,
+    {
+      type: QueryTypes.INSERT,
+      replacements: { ...data },
+    }
+  );
   res.json(result);
 });
 
 const modifySensorType = expressAsyncHandler(async (req, res) => {
-  console.log(req.body);
-  res.json("Receive successfully!");
-  // 1. Update db
-  await SensorType.update(
+  let result = await sequelize.query(
+    "UPDATE `sensor_types` SET status = :status WHERE id = :id;",
     {
-      status: req.body.status,
-    },
-    {
-      where: {
-        id: req.body.id,
-      },
+      type: QueryTypes.UPDATE,
+      replacements: { id: req.body.id, status: req.body.status },
     }
   );
 });

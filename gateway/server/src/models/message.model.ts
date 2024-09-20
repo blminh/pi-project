@@ -13,10 +13,6 @@ const Message = db.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    sensor_status: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     topic: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,6 +28,14 @@ const Message = db.define(
     details: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Date.now(),
     },
   },
   { timestamps: true }

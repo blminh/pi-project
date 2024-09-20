@@ -114,7 +114,7 @@ io.on("connection", (socket) => {
   });
 });
 
-db.sync({ force: true }).then(() => {
+db.sync({ force: false }).then(() => {
   server.listen(port, () => {
     return console.log(`Express is listening at http://localhost:${port}`);
   });

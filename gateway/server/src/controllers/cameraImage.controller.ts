@@ -1,17 +1,24 @@
 import expressAsyncHandler from "express-async-handler";
-import CameraImage from "../models/cameraImage.model";
+import { QueryTypes } from "sequelize";
+import sequelize from "../database/db";
 import { constant } from "../utils/constant";
 
 const imagesList = expressAsyncHandler(async (req, res) => {
-  let data = await CameraImage.findAll();
+  let data = await sequelize.query("SELECT * FROM `camera_images`", {
+    type: QueryTypes.SELECT,
+  });
   res.json(data);
 });
 
 const getImage = expressAsyncHandler(async (req, res) => {
-  console.log(req.params.id);
-  console.log(req.query.id);
   let id: any = req.query.id;
-  let data = await CameraImage.findByPk(parseInt(id));
+  let data = await sequelize.query(
+    "SELECT * FROM `camera_images` WHERE id = :id",
+    {
+      type: QueryTypes.SELECT,
+      replacements: { id },
+    }
+  );
   res.json(data);
 });
 
@@ -22,9 +29,14 @@ const addImage = expressAsyncHandler(async (req, res) => {
     status: constant.STATUS_ACTIVE,
     created_at: Date.now(),
   };
-  console.log(data);
-  let result = await CameraImage.create(data);
-  console.log(result);
+  let result = await sequelize.query(
+    `INSERT INTO camera_images (name, status, details)
+     VALUES (:name, :status, :details);`,
+    {
+      type: QueryTypes.INSERT,
+      replacements: { ...data },
+    }
+  );
   res.json(result);
 });
 
