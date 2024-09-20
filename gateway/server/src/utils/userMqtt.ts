@@ -26,7 +26,7 @@ const pubMsg = (sensor: number, topic: string, data: any) => {
         msg.details = "Message published successfully";
       }
 
-      await messageController.addMsgFromServer(msg);
+      await messageController.saveMsg(msg);
     });
   });
 

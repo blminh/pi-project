@@ -10,34 +10,62 @@ const imagesList = expressAsyncHandler(async (req, res) => {
   res.json(data);
 });
 
-const getImage = expressAsyncHandler(async (req, res) => {
-  let id: any = req.query.id;
-  let data = await sequelize.query(
+const findImageById = async (id: number) => {
+  const result = sequelize.query(
     "SELECT * FROM `camera_images` WHERE id = :id",
     {
       type: QueryTypes.SELECT,
       replacements: { id },
     }
   );
+  return result;
+};
+
+const findImageByName = async (name: string) => {
+  const result = sequelize.query(
+    "SELECT * FROM `camera_images` WHERE name = :name",
+    {
+      type: QueryTypes.SELECT,
+      replacements: { name },
+    }
+  );
+  return result;
+};
+
+const getImage = expressAsyncHandler(async (req, res) => {
+  let id: any = req.query.id;
+  let data = await findImageById(id);
   res.json(data);
 });
 
-const addImage = expressAsyncHandler(async (req, res) => {
-  console.log(req.body);
-  let data = {
-    ...req.body._value,
+const saveImage = async (data: any) => {
+  let saveData = {
+    ...data,
     status: constant.STATUS_ACTIVE,
     created_at: Date.now(),
   };
-  let result = await sequelize.query(
+
+  const result = sequelize.query(
     `INSERT INTO camera_images (name, status, details)
      VALUES (:name, :status, :details);`,
     {
       type: QueryTypes.INSERT,
-      replacements: { ...data },
+      replacements: { ...saveData },
     }
   );
+  return result;
+};
+
+const addImage = expressAsyncHandler(async (req, res) => {
+  let result = await saveImage(req.body);
   res.json(result);
 });
 
-export default { imagesList, addImage, getImage };
+export default {
+  imagesList,
+  addImage,
+  saveImage,
+  getImage,
+  findImageById,
+  findImageByName,
+};

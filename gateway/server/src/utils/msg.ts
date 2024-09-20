@@ -1,7 +1,7 @@
 import messageController from "../controllers/message.controller";
 import { constant } from "./constant";
 
-const addMsg = async (sensor: number, topic: string, data: any) => {
+const addMsg = (sensor: number, topic: string, data: any) => {
   let msg = {
     sensor_id: sensor,
     topic,
@@ -9,7 +9,7 @@ const addMsg = async (sensor: number, topic: string, data: any) => {
     status: data.status ?? constant.MSG_SUCCESS,
     details: data.details ?? "",
   };
-  await messageController.addMsgFromServer(msg);
+  return messageController.saveMsg(msg);
 };
 
 export default { addMsg };

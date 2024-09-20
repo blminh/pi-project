@@ -4,11 +4,12 @@ import dotenv from "dotenv";
 import express, { Express } from "express";
 import fs from "fs/promises";
 import { createServer } from "http";
+import _ from "lodash";
 import path from "path";
 import { Server } from "socket.io";
 import { Worker } from "worker_threads";
+import cameraImageController from "./controllers/cameraImage.controller";
 import db from "./database/db";
-import CameraImage from "./models/cameraImage.model";
 import messageRoutes from "./routes/message";
 import sensorRoutes from "./routes/sensor";
 import { constant } from "./utils/constant";
@@ -55,8 +56,6 @@ const imageWorker = new Worker(
 );
 imageWorker.on("message", async (result) => {
   const bufferData = Buffer.from(result.message.image_data, "binary");
-  let isWriteImg = false;
-  console.log(result);
 
   fs.writeFile(
     `${__dirname}/public/images/${result.message.image_name}`,
@@ -70,8 +69,23 @@ imageWorker.on("message", async (result) => {
         status: constant.MSG_SUCCESS,
         details: "Camera | Detect motion",
       };
-      msg.addMsg(1, result.topic, msgData);
-      isWriteImg = true;
+      return msg.addMsg(1, result.topic, msgData);
+    })
+    .then(async () => {
+      let res = await cameraImageController.findImageByName(
+        result.message.image_name
+      );
+      return res;
+    })
+    .then((val) => {
+      if (_.isEmpty(val)) {
+        let saveImgData = {
+          name: result.message.image_name,
+          status: constant.STATUS_ACTIVE,
+          details: `${result.topic} | ${result.message.image_name}`,
+        };
+        cameraImageController.saveImage(saveImgData);
+      }
     })
     .catch((err) => {
       console.error(err);
@@ -83,24 +97,10 @@ imageWorker.on("message", async (result) => {
       };
       msg.addMsg(1, result.topic, msgData);
     });
-
-  if (isWriteImg) {
-    let saveImgData = {
-      name: result.message.image_name,
-      status: constant.STATUS_ACTIVE,
-    };
-    const img = await CameraImage.findOne({
-      where: { name: result.message.image_name },
-    });
-    if (img === null) {
-      await CameraImage.create(saveImgData);
-    }
-  }
 });
 
 const worker = new Worker(__dirname + "/workers/mqttWorker.js");
 io.on("connection", (socket) => {
-  console.log("a user connected");
   worker.on("message", (result) => {
     socket.emit("temperature", result);
 

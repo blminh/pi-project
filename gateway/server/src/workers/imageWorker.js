@@ -6,12 +6,14 @@ const _ = require("lodash");
 const contrib = require("lodash-contrib");
 _.mixin(contrib);
 
-const client = mqtt.connect(`${process.env.PI_URL}/${process.env.PI_PORT}`);
+const client = mqtt.connect(
+  `${process.env.SERVER_URL}/${process.env.MQTT_PORT}`
+);
 
 client.on("connect", () => {
   console.log("Connect to mqtt!");
 
-  client.subscribe("home/camera", { qos: 1 }, (err) => {
+  client.subscribe("camera/webcam", { qos: 1 }, (err) => {
     if (err) {
       console.error("Subscribe error:", err);
     }

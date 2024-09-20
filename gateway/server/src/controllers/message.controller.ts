@@ -45,8 +45,6 @@ const messagesList = expressAsyncHandler(async (req, res) => {
     }
   );
 
-  console.log(data);
-
   res.json(includeMsgAndSensor(data));
 });
 
@@ -80,25 +78,17 @@ const getMsg = expressAsyncHandler(async (req, res) => {
       replacements: { id },
     }
   );
-  console.log(data);
 
   res.json(includeMsgAndSensor(data));
 });
 
 const addMsg = expressAsyncHandler(async (req, res) => {
-  let result = await sequelize.query(
-    `INSERT INTO messages (sensor_id, topic, message_type, status, details)
-     VALUES (:sensor_id, :topic, :message_type, :status, :details);`,
-    {
-      type: QueryTypes.INSERT,
-      replacements: { ...req.body },
-    }
-  );
+  let result = await saveMsg(req.body);
   res.json(result);
 });
 
-const addMsgFromServer = async (data: any) => {
-  let result = await sequelize.query(
+const saveMsg = async (data: any) => {
+  const result = await sequelize.query(
     `INSERT INTO messages (sensor_id, topic, message_type, status, details)
      VALUES (:sensor_id, :topic, :message_type, :status, :details);`,
     {
@@ -106,6 +96,7 @@ const addMsgFromServer = async (data: any) => {
       replacements: { ...data },
     }
   );
+  return result;
 };
 
-export default { messagesList, addMsg, addMsgFromServer, getMsg };
+export default { messagesList, addMsg, saveMsg, getMsg };
